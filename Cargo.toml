@@ -1,13 +1,25 @@
 [package]
-name = "pz-map-editor"
+name = "pz-map-tool"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+default = ["cli"]
+cli = ["dep:clap"]
+
 [dependencies]
-serde = { version = "1.0", features = ["derive"] }
+clap = { version = "4.4.14", features = ["derive"], optional = true }
+serde = { version = "1.0", features = ["derive"]}
 
 [dev-dependencies]
 test-case = "3.3.1"
 
+[[bin]]
+name = "pz-map-tool-cli"
+path = "src/main.rs"
+test = false
+doctest = false
+bench = false
+required-features = ["cli"]
