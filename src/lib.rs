@@ -15,6 +15,13 @@ pub enum Action {
 
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub enum Source {
+    SaveName(String),
+    Path(PathBuf),
+}
+
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct ModifyMap {
     root_path: PathBuf,
     default_action: Action,
