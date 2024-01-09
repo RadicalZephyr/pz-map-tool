@@ -1,5 +1,7 @@
 use std::{num::ParseIntError, ops::RangeInclusive, path::PathBuf, str::FromStr};
 
+use thiserror::Error;
+
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -55,7 +57,7 @@ impl SavePaths {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct MapRegion {
     x_range: RangeInclusive<i32>,
@@ -76,6 +78,70 @@ impl MapRegion {
             coords_to_chunks(&self.x_range),
             coords_to_chunks(&self.y_range),
         )
+    }
+}
+
+#[derive(Clone, Debug, Error, PartialEq)]
+pub enum InvalidMapRegion {
+    #[error("Map Region is missing a comma separating x and y range components")]
+    MissingComma,
+
+    #[error("x range is missing a colon `:` separating the beginning and the end")]
+    MissingColonX,
+
+    #[error("y range is missing a colon `:` separating the beginning and the end")]
+    MissingColonY,
+
+    #[error("{0} is not a valid integer: {1}")]
+    InvalidPart(MapRegionPart, #[source] ParseIntError),
+}
+
+#[derive(Copy, Clone, Debug, Error, PartialEq)]
+pub enum MapRegionPart {
+    #[error("x start")]
+    StartX,
+
+    #[error("x end")]
+    EndX,
+
+    #[error("y start")]
+    StartY,
+
+    #[error("y end")]
+    EndY,
+}
+
+impl FromStr for MapRegion {
+    type Err = InvalidMapRegion;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (x_str, y_str) = s.split_once(',').ok_or(InvalidMapRegion::MissingComma)?;
+
+        let (x_begin_str, x_end_str) = x_str
+            .split_once(':')
+            .ok_or(InvalidMapRegion::MissingColonX)?;
+        let (y_begin_str, y_end_str) = y_str
+            .split_once(':')
+            .ok_or(InvalidMapRegion::MissingColonY)?;
+
+        let x_begin: i32 = x_begin_str
+            .parse()
+            .map_err(|e| InvalidMapRegion::InvalidPart(MapRegionPart::StartX, e))?;
+        let x_end: i32 = x_end_str
+            .parse()
+            .map_err(|e| InvalidMapRegion::InvalidPart(MapRegionPart::EndX, e))?;
+
+        let y_begin: i32 = y_begin_str
+            .parse()
+            .map_err(|e| InvalidMapRegion::InvalidPart(MapRegionPart::StartY, e))?;
+        let y_end: i32 = y_end_str
+            .parse()
+            .map_err(|e| InvalidMapRegion::InvalidPart(MapRegionPart::EndY, e))?;
+
+        Ok(MapRegion::new(
+            RangeInclusive::new(x_begin, x_end),
+            RangeInclusive::new(y_begin, y_end),
+        ))
     }
 }
 
@@ -151,6 +217,31 @@ mod tests {
     use super::*;
 
     use test_case::{test_case, test_matrix};
+
+    #[test_case("0:1,0:1", 0..=1, 0..=1 ; "simple_both_positive")]
+    #[test_case("-2:-1,0:1", -2..=-1, 0..=1 ; "simple_x_negative")]
+    #[test_case("0:1,-2:-1", 0..=1, -2..=-1 ; "simple_y_negative")]
+    #[test_case("-2:-1,-2:-1", -2..=-1, -2..=-1 ; "simple_both_negative")]
+    #[test_case("-2:1,-2:1", -2..=1, -2..=1 ; "simple_both_cross_zero")]
+    fn parse_map_region(
+        s: &str,
+        x_range: RangeInclusive<i32>,
+        y_range: RangeInclusive<i32>,
+    ) -> Result<(), InvalidMapRegion> {
+        assert_eq!(s.parse::<MapRegion>()?, MapRegion::new(x_range, y_range));
+        Ok(())
+    }
+
+    #[test_case("0:10:1", InvalidMapRegion::MissingComma ; "missing_a_comma")]
+    #[test_case("01,0:1", InvalidMapRegion::MissingColonX ; "missing_the_x_colon")]
+    #[test_case("0:1,01", InvalidMapRegion::MissingColonY ; "missing_the_y_colon")]
+    #[test_case("a:1,0:1", InvalidMapRegion::InvalidPart(MapRegionPart::StartX, "a".parse::<i32>().unwrap_err()) ; "x_start_is_nan")]
+    #[test_case("1:a,0:1", InvalidMapRegion::InvalidPart(MapRegionPart::EndX, "a".parse::<i32>().unwrap_err()) ; "x_end_is_nan")]
+    #[test_case("1:0,a:1", InvalidMapRegion::InvalidPart(MapRegionPart::StartY, "a".parse::<i32>().unwrap_err()) ; "y_start_is_nan")]
+    #[test_case("1:0,1:a", InvalidMapRegion::InvalidPart(MapRegionPart::EndY, "a".parse::<i32>().unwrap_err()) ; "y_end_is_nan")]
+    fn parse_map_region_errors_when(s: &str, err: InvalidMapRegion) {
+        assert_eq!(s.parse::<MapRegion>(), Err(err));
+    }
 
     #[test_case(-1, 9)]
     #[test_case(0, 9)]
