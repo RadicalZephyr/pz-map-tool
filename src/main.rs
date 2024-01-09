@@ -42,6 +42,17 @@ fn main() {
     let args = Cli::parse();
 
     println!("{args:#?}");
+
+    // Get the Path for the save file by name or direct path
+    //   - Verify it's a valid save name/path
+
+    // Create a ModifyMap struct
+    //   - Invert Action for `default_action`
+
+    // Get an iterator over all files to be deleted based on ModifyMap
+    // spec
+
+    // Iterate over all files and print out/delete files
 }
 
 #[test]
