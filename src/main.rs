@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use clap::{Args, Parser};
-use pz_map_tool::Action;
+use pz_map_tool::{Action, MapRegion};
 
 #[derive(Debug, Parser)]
 #[command(author, version, about, long_about)]
@@ -20,6 +20,10 @@ struct Cli {
     /// The action for specified regions of the map
     #[arg(short, long, value_enum)]
     action: Action,
+
+    /// Regions to perform <action> on
+    #[arg(short, long, required = true)]
+    region: Vec<MapRegion>,
 }
 
 #[derive(Clone, Debug, Args)]
