@@ -28,7 +28,7 @@ test-case = "3.3.1"
 [[bin]]
 name = "pz-map-tool-cli"
 path = "src/main.rs"
-test = false
+test = true
 doctest = false
 bench = false
 required-features = ["cli"]

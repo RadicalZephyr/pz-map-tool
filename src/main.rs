@@ -39,3 +39,9 @@ fn main() {
 
     println!("{args:#?}");
 }
+
+#[test]
+fn verify_cli() {
+    use clap::CommandFactory;
+    Cli::command().debug_assert()
+}
