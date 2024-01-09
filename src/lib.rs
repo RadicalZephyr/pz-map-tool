@@ -1,14 +1,17 @@
 use std::{num::ParseIntError, ops::RangeInclusive, path::PathBuf, str::FromStr};
 
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum Action {
     Save,
     Delete,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct ModifyMap {
     root_path: PathBuf,
     default_action: Action,
@@ -51,7 +54,8 @@ impl SavePaths {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct MapRegion {
     x_range: RangeInclusive<i32>,
     y_range: RangeInclusive<i32>,
