@@ -124,19 +124,25 @@ impl FromStr for MapRegion {
             .split_once(':')
             .ok_or(InvalidMapRegion::MissingColonY)?;
 
-        let x_begin: i32 = x_begin_str
+        let mut x_begin: i32 = x_begin_str
             .parse()
             .map_err(|e| InvalidMapRegion::InvalidPart(MapRegionPart::StartX, e))?;
-        let x_end: i32 = x_end_str
+        let mut x_end: i32 = x_end_str
             .parse()
             .map_err(|e| InvalidMapRegion::InvalidPart(MapRegionPart::EndX, e))?;
+        if x_end < x_begin {
+            std::mem::swap(&mut x_begin, &mut x_end)
+        }
 
-        let y_begin: i32 = y_begin_str
+        let mut y_begin: i32 = y_begin_str
             .parse()
             .map_err(|e| InvalidMapRegion::InvalidPart(MapRegionPart::StartY, e))?;
-        let y_end: i32 = y_end_str
+        let mut y_end: i32 = y_end_str
             .parse()
             .map_err(|e| InvalidMapRegion::InvalidPart(MapRegionPart::EndY, e))?;
+        if y_end < y_begin {
+            std::mem::swap(&mut y_begin, &mut y_end)
+        }
 
         Ok(MapRegion::new(
             RangeInclusive::new(x_begin, x_end),
@@ -219,10 +225,11 @@ mod tests {
     use test_case::{test_case, test_matrix};
 
     #[test_case("0:1,0:1", 0..=1, 0..=1 ; "simple_both_positive")]
+    #[test_case("1:0,1:0", 0..=1, 0..=1 ; "high_low_both_positive")]
     #[test_case("-2:-1,0:1", -2..=-1, 0..=1 ; "simple_x_negative")]
     #[test_case("0:1,-2:-1", 0..=1, -2..=-1 ; "simple_y_negative")]
     #[test_case("-2:-1,-2:-1", -2..=-1, -2..=-1 ; "simple_both_negative")]
-    #[test_case("-2:1,-2:1", -2..=1, -2..=1 ; "simple_both_cross_zero")]
+    #[test_case("1:-2,1:-2", -2..=1, -2..=1 ; "high_low_both_cross_zero")]
     fn parse_map_region(
         s: &str,
         x_range: RangeInclusive<i32>,
