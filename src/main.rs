@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use clap::{Args, Parser};
+use pz_map_tool::Action;
 
 #[derive(Debug, Parser)]
 #[command(author, version, about, long_about)]
@@ -15,6 +16,10 @@ struct Cli {
 
     #[command(flatten)]
     source: Source,
+
+    /// The action for specified regions of the map
+    #[arg(short, long, value_enum)]
+    action: Action,
 }
 
 #[derive(Clone, Debug, Args)]
