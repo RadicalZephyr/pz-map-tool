@@ -1,9 +1,16 @@
 [package]
 name = "pz-map-tool"
 version = "0.1.0"
+license = "MIT OR Apache-2.0"
+authors = ["Zefira Shannon <zefira@hey.com>"]
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+categories = ["command-line-utilities", "game-development"]
+keywords = ["project-zomboid"]
+
+description = "A simple CLI tool for working with the map in Project Zomboid save files and mods."
+readme = "README.md"
+
 
 [features]
 default = ["cli"]
