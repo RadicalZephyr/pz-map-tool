@@ -79,6 +79,18 @@ fn main() {
             };
             let mut saves_path = home;
             saves_path.extend(["Zomboid", "Saves"]);
+            // N.B. all saves, including local MP server games, show
+            // up in directories underneath this `Zomboid/Saves`
+            // directories depending on which sandbox settings they
+            // were created from. Possible folders are:
+            //  - Sandbox
+            //  - Builder
+            //  - Survivor
+            //  - Apocalypse
+            //  - Multiplayer
+            //
+            // TODO: (zefs-2024-01-14) verify whether Multiplayer saves
+            // have a different folder structure to Single player ones
         }
         Source::Path(path) => todo!(),
     }
